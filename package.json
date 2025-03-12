@@ -1,5 +1,5 @@
 {
-  "name": "playwrightapi",
+  "name": "playwright-api-tests",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
