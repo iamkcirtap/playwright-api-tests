@@ -1,7 +1,12 @@
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { request } from '@playwright/test';
 import { getAuthToken } from './utils/auth.js';
 import fs from 'fs';
-import path from 'path';
+
+// Manually define __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function globalSetup() {
   console.log('🔄 Running global setup to fetch auth token...');
@@ -12,7 +17,7 @@ async function globalSetup() {
   console.log(`🔐 Cached Auth Token: ${token}`);
 
   // Save token to file
-  fs.writeFileSync(path.join(__dirname, 'auth-token.json'), JSON.stringify({ token }));
+  fs.writeFileSync(join(__dirname, 'auth-token.json'), JSON.stringify({ token }));
 }
 
 export default globalSetup;

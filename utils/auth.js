@@ -1,23 +1,34 @@
 import dotenv from 'dotenv';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
-let cachedToken = null;
-let refreshToken = null;
-let tokenExpiry = 0;
+const tokenFile = path.join(process.cwd(), 'auth-token.json');
 
 async function getAuthToken(request) {
   const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:8080';
   const now = Date.now();
 
-  // Check if token is still valid
+  // Load token from file
+  let cachedToken = '';
+  let refreshToken = '';
+  let tokenExpiry = 0;
+
+  if (fs.existsSync(tokenFile)) {
+    const authData = JSON.parse(fs.readFileSync(tokenFile, 'utf-8'));
+    cachedToken = authData.token || '';
+    refreshToken = authData.refresh_token || '';
+    tokenExpiry = authData.expiry || 0;
+  }
+
+  // Use cached token if it's still valid
   if (cachedToken && now < tokenExpiry) {
     console.log('✅ Using cached token');
     return cachedToken;
   }
 
-  // If token expired, try to refresh
+  // Refresh token if expired
   if (refreshToken) {
     console.log('🔄 Token expired, refreshing...');
     const refreshResponse = await request.post(`${apiBaseUrl}/auth/refresh`, {
@@ -29,15 +40,16 @@ async function getAuthToken(request) {
       cachedToken = refreshData.token;
       refreshToken = refreshData.refresh_token;
       tokenExpiry = now + refreshData.expires_in * 1000;
+      
       console.log(`🔄 Refreshed Auth Token: ${cachedToken}`);
 
-      // Save token
-      fs.writeFileSync('./auth-token.json', JSON.stringify({ token: cachedToken, refresh_token: refreshToken }));
+      // Save the new token
+      fs.writeFileSync(tokenFile, JSON.stringify({ token: cachedToken, refresh_token: refreshToken, expiry: tokenExpiry }));
       return cachedToken;
     }
   }
 
-  // Otherwise, get a new token
+  // Otherwise, fetch a new token
   console.log('🔄 Fetching new auth token...');
   const response = await request.post(`${apiBaseUrl}/auth/login`, {
     data: { username: 'testuser', password: 'testpass' },
@@ -54,8 +66,8 @@ async function getAuthToken(request) {
 
   console.log(`✅ New Auth Token: ${cachedToken}`);
 
-  // Save token to file
-  fs.writeFileSync('./auth-token.json', JSON.stringify({ token: cachedToken, refresh_token: refreshToken }));
+  // Save token
+  fs.writeFileSync(tokenFile, JSON.stringify({ token: cachedToken, refresh_token: refreshToken, expiry: tokenExpiry }));
 
   return cachedToken;
 }

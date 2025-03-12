@@ -1,22 +1,41 @@
+import fs from 'fs';
+import path from 'path';
+
 export class APIClient {
   constructor(request) {
     this.request = request;
+    this.tokenFile = path.join(process.cwd(), 'auth-token.json');
   }
 
   async get(endpoint) {
-    return this.request.get(endpoint, {
-      headers: {
-        Authorization: `Bearer ${process.env.CACHED_AUTH_TOKEN}`, // ✅ Uses pre-fetched token
-      },
-    });
+    const headers = this.getAuthHeaders();
+    return await this.request.get(endpoint, { headers });
   }
 
-  getAuthToken() {
-    const token = process.env.CACHED_AUTH_TOKEN;
-    if (!token) {
-      throw new Error('CACHED_AUTH_TOKEN is not set');
+  getAuthHeaders() {
+    let token = this.loadToken();
+    return { Authorization: `Bearer ${token}` };
+  }
+
+  loadToken() {
+    if (fs.existsSync(this.tokenFile)) {
+      const authData = JSON.parse(fs.readFileSync(this.tokenFile, 'utf-8'));
+      return authData.token || '';
     }
-    // Additional validation logic for the token can be added here
-    return token;
+    return '';
+  }
+
+  async mockTokenExpiration() {
+    console.log('⏳ Simulating token expiration...');
+
+    if (fs.existsSync(this.tokenFile)) {
+      let authData = JSON.parse(fs.readFileSync(this.tokenFile, 'utf-8'));
+      authData.expiry = Date.now() - 1000; // Expire token immediately
+      fs.writeFileSync(this.tokenFile, JSON.stringify(authData));
+    }
+
+    console.log('⚠️ Token expired! Next request should trigger refresh.');
+    
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s to simulate expiry
   }
 }
