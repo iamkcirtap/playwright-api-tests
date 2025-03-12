@@ -2,11 +2,13 @@ import { defineConfig } from '@playwright/test';
 import fs from 'fs';
 
 let cachedToken = '';
-if (fs.existsSync('./auth-token.json')) {
-  const authData = JSON.parse(fs.readFileSync('./auth-token.json', 'utf-8'));
-  cachedToken = authData.token;
-  console.log(`🔐 Loaded Auth Token: ${cachedToken}`);
-}
+(async () => {
+  if (fs.existsSync('./auth-token.json')) {
+    const authData = JSON.parse(await fs.promises.readFile('./auth-token.json', 'utf-8'));
+  // console.log(`🔐 Loaded Auth Token: ${cachedToken}`);
+    console.log(`🔐 Loaded Auth Token: ${cachedToken}`);
+  }
+})();
 
 export default defineConfig({
   timeout: 30000,
