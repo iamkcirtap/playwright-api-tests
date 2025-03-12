@@ -34,8 +34,8 @@ jobs:
       - name: 🏗️ Set Up WireMock Stubs
         run: node mocks/auth-mock.js
 
-      - name: 🏗️ Run Global Setup (Fetch Auth Token)
-        run: npx playwright test --global-setup
+      - name: 🔄 Run Global Setup (Fetch Auth Token)
+        run: node global-setup.js
 
       - name: 🧪 Run Playwright API Tests
         run: npx playwright test
