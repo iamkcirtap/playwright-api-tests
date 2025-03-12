@@ -1,12 +1,21 @@
 import { defineConfig } from '@playwright/test';
+import fs from 'fs';
+
+let cachedToken = '';
+if (fs.existsSync('./auth-token.json')) {
+  const authData = JSON.parse(fs.readFileSync('./auth-token.json', 'utf-8'));
+  cachedToken = authData.token;
+  console.log(`🔐 Loaded Auth Token: ${cachedToken}`);
+}
 
 export default defineConfig({
-  timeout: 30000, // 30 seconds timeout
+  timeout: 30000,
+  globalSetup: './global-setup.js',
   use: {
-    baseURL: 'https://jsonplaceholder.typicode.com', // Change this for real API
+    baseURL: process.env.API_BASE_URL || 'http://localhost:8080',
     extraHTTPHeaders: {
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${cachedToken}`,
     },
   },
-  reporter: [['html', { outputFolder: 'test-results' }]], // Generates test reports
+  reporter: [['html', { outputFolder: 'test-results' }]],
 });

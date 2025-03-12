@@ -2,36 +2,47 @@ name: Playwright API Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: 🛠 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: 🔧 Set Up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm'
+          node-version: 18
+          cache: npm
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: 📦 Install Dependencies
+        run: npm install
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: 🚀 Start WireMock
+        run: |
+          curl -o wiremock.jar https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/3.5.1/wiremock-standalone-3.5.1.jar
+          java -jar wiremock.jar --port 8080 &
+        shell: bash
 
-      - name: Run Playwright API Tests
+      - name: 🏗️ Set Up WireMock Stubs
+        run: node mocks/auth-mock.js
+
+      - name: 🏗️ Run Global Setup (Fetch Auth Token)
+        run: npx playwright test --global-setup
+
+      - name: 🧪 Run Playwright API Tests
         run: npx playwright test
 
-      - name: Upload Test Report
-        if: always()
+      - name: 📊 Upload Playwright Report
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: test-results
+          name: playwright-report
           path: test-results/

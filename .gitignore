@@ -1,3 +1,5 @@
 node_modules/
 .env
 test-results/
+__files/
+wiremock.jar
