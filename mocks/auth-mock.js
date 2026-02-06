@@ -190,6 +190,28 @@ async function setupMocks() {
     console.log('✅ Mocked: Admin Dashboard (User Access)');
   }
 
+  // Mock token update webhook (POST /auth/update-valid-tokens)
+  response = await fetch('http://localhost:8080/__admin/mappings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      request: {
+        method: 'POST',
+        url: '/auth/update-valid-tokens',
+      },
+      response: {
+        status: 200,
+        jsonBody: { success: true },
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    console.error('❌ Failed to mock /auth/update-valid-tokens:', await response.text());
+  } else {
+    console.log('✅ Mocked: POST /auth/update-valid-tokens');
+  }
+
 }
 
 setupMocks();
