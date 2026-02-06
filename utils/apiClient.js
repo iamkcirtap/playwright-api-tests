@@ -7,14 +7,24 @@ export class APIClient {
     this.tokenFile = path.join(process.cwd(), 'auth-token.json');
   }
 
-  async get(endpoint) {
-    const headers = this.getAuthHeaders();
+  async get(endpoint, role = 'user') {
+    const headers = this.getAuthHeaders(role);
+
+    console.log(`📡 Sending GET ${endpoint} with headers:`, headers); // ✅ Debugging log
+
     return await this.request.get(endpoint, { headers });
   }
 
-  getAuthHeaders() {
+  getAuthHeaders(role) {
     let token = this.loadToken();
-    return { Authorization: `Bearer ${token}` };
+    console.log(`📡 Sending request with headers:`, { 
+      Authorization: `Bearer ${token}`, 
+      Role: role
+    });
+    return { 
+      Authorization: `Bearer ${token}`, 
+      Role: role
+    };
   }
 
   loadToken() {
@@ -37,5 +47,19 @@ export class APIClient {
     console.log('⚠️ Token expired! Next request should trigger refresh.');
     
     await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s to simulate expiry
+  }
+
+  async mockInvalidRefreshToken() {
+    console.log('⏳ Simulating invalid refresh token...');
+
+    if (fs.existsSync(this.tokenFile)) {
+      let authData = JSON.parse(fs.readFileSync(this.tokenFile, 'utf-8'));
+      authData.refresh_token = 'invalid-refresh-token'; // Set invalid token
+      fs.writeFileSync(this.tokenFile, JSON.stringify(authData));
+    }
+
+    console.log('⚠️ Invalid refresh token set! Next refresh attempt should fail.');
+    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
