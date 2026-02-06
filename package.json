@@ -13,12 +13,12 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@playwright/test": "^1.51.0",
-    "wiremock": "^3.12.1"
+    "@playwright/test": "^1.58.1",
+    "wiremock": "^3.13.2"
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.2.4",
     "node-fetch": "^3.3.2",
-    "winston": "^3.17.0"
+    "winston": "^3.19.0"
   }
 }
