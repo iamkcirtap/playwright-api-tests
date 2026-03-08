@@ -24,39 +24,49 @@ async function getAuthToken(request) {
 
   // Use cached token if it's still valid
   if (cachedToken && now < tokenExpiry) {
-    console.log('✅ Using cached token');
+    console.log('Using cached token');
     return cachedToken;
   }
 
   // Refresh token if expired
   if (refreshToken) {
-    console.log('🔄 Token expired, refreshing...');
-    const refreshResponse = await request.post(`${apiBaseUrl}/auth/refresh`, {
-      data: { refresh_token: refreshToken },
-    });
+    console.log('Token expired, refreshing...');
 
-    if (refreshResponse.status() === 200) {
-      const refreshData = await refreshResponse.json();
-      cachedToken = refreshData.token;
-      refreshToken = refreshData.refresh_token;
-      tokenExpiry = now + refreshData.expires_in * 1000;
-      
-      console.log(`🔄 Refreshed Auth Token: ${cachedToken}`);
+    try {
+      const refreshResponse = await request.post(`${apiBaseUrl}/auth/refresh`, {
+        data: { refresh_token: refreshToken },
+      });
 
-      // Save the new token
-      fs.writeFileSync(tokenFile, JSON.stringify({ token: cachedToken, refresh_token: refreshToken, expiry: tokenExpiry }));
-      return cachedToken;
+      if (refreshResponse.status() === 200) {
+        const refreshData = await refreshResponse.json();
+        cachedToken = refreshData.token;
+        refreshToken = refreshData.refresh_token;
+        tokenExpiry = now + refreshData.expires_in * 1000;
+
+        console.log(`Refreshed auth token: ${cachedToken}`);
+
+        // Save the new token
+        fs.writeFileSync(
+          tokenFile,
+          JSON.stringify({ token: cachedToken, refresh_token: refreshToken, expiry: tokenExpiry })
+        );
+        return cachedToken;
+      }
+
+      console.warn(`Refresh failed with status ${refreshResponse.status()}, falling back to login.`);
+    } catch (error) {
+      console.warn(`Refresh request failed, falling back to login: ${error.message}`);
     }
   }
 
   // Otherwise, fetch a new token
-  console.log('🔄 Fetching new auth token...');
+  console.log('Fetching new auth token...');
   const response = await request.post(`${apiBaseUrl}/auth/login`, {
     data: { username: 'testuser', password: 'testpass' },
   });
 
   if (response.status() !== 200) {
-    throw new Error(`❌ Authentication failed: ${response.status()}`);
+    throw new Error(`Authentication failed: ${response.status()}`);
   }
 
   const responseBody = await response.json();
@@ -64,7 +74,7 @@ async function getAuthToken(request) {
   refreshToken = responseBody.refresh_token;
   tokenExpiry = now + responseBody.expires_in * 1000;
 
-  console.log(`✅ New Auth Token: ${cachedToken}`);
+  console.log(`New auth token: ${cachedToken}`);
 
   // Save token
   fs.writeFileSync(tokenFile, JSON.stringify({ token: cachedToken, refresh_token: refreshToken, expiry: tokenExpiry }));

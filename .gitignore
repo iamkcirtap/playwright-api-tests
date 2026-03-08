@@ -3,3 +3,4 @@ node_modules/
 test-results/
 __files/
 wiremock.jar
+auth-token.json
