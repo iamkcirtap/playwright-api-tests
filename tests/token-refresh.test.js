@@ -1,16 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { APIClient } from '../utils/apiClient.js';
-import { createLogger, transports, format } from 'winston';
+import logger from '../utils/logger.js';
 
-// Initialize logger once, outside tests
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(format.colorize(), format.simple()),
-  transports: [new transports.Console()]
-});
-
-test('Token should expire and refresh automatically', async ({ request }) => {
-  const api = new APIClient(request);
+test('Token should expire and refresh automatically', async ({ request }, testInfo) => {
+  const api = new APIClient(request, testInfo.parallelIndex);
 
   logger.info('🔄 First API call - should work with initial token');
   let response = await api.get('/users');
@@ -19,7 +12,7 @@ test('Token should expire and refresh automatically', async ({ request }) => {
 
   logger.info('⏳ Mocking token expiration...');
   if (api.mockTokenExpiration) {
-    await api.mockTokenExpiration(); // Ensure `mockTokenExpiration()` exists in APIClient
+    await api.mockTokenExpiration();
   } else {
     logger.warn('⚠️ mockTokenExpiration() is not implemented in APIClient');
   }
@@ -29,3 +22,4 @@ test('Token should expire and refresh automatically', async ({ request }) => {
   expect(response.status()).toBe(200);
   logger.info('✅ Second API call succeeded (token refreshed)');
 });
+

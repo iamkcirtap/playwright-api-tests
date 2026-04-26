@@ -1,13 +1,14 @@
 import { request } from '@playwright/test';
 import { getAuthToken } from './utils/auth.js';
+import logger from './utils/logger.js';
 
 async function globalSetup() {
-  console.log('Running global setup to fetch auth token...');
+  logger.info('Running global setup to fetch auth token...');
 
   const requestContext = await request.newContext();
   try {
     const token = await getAuthToken(requestContext);
-    console.log(`Cached auth token: ${token}`);
+    logger.info(`Cached auth token: ${token}`);
   } finally {
     await requestContext.dispose();
   }

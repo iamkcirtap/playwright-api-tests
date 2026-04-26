@@ -1,15 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { APIClient } from '../utils/apiClient.js';
-import { createLogger, transports, format } from 'winston';
+import logger from '../utils/logger.js';
 
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(format.colorize(), format.simple()),
-  transports: [new transports.Console()]
-});
-
-test('Should fail with invalid refresh token', async ({ request }) => {
-  const api = new APIClient(request);
+test('Should fail with invalid refresh token', async ({ request }, testInfo) => {
+  const api = new APIClient(request, testInfo.parallelIndex);
 
   logger.info('🔄 First API call - should work with initial token');
   let response = await api.get('/users');
@@ -30,3 +24,4 @@ test('Should fail with invalid refresh token', async ({ request }) => {
 
   logger.info('✅ Refresh failed as expected (Invalid token detected)');
 });
+

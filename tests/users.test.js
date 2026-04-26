@@ -1,18 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { APIClient } from '../utils/apiClient';
+import { APIClient } from '../utils/apiClient.js';
+import logger from '../utils/logger.js';
 
-test('should return a list of users with authentication', async ({ request }) => {
-  const api = new APIClient(request);
+test('should return a list of users with authentication', async ({ request }, testInfo) => {
+  const api = new APIClient(request, testInfo.parallelIndex);
 
   const response = await api.get('/users');
   expect(response.status()).toBe(200);
 
   const data = await response.json();
-  expect(Array.isArray(data)).toBeTruthy(); // ✅ Ensure response is an array
-  expect(data.length).toBeGreaterThan(0);   // ✅ Validate non-empty list
+  expect(Array.isArray(data)).toBeTruthy();
+  expect(data.length).toBeGreaterThan(0);
 
-  // Use a proper logging mechanism for production
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`✅ Users response:`, data);
-  }
+  logger.debug(`Users response: ${JSON.stringify(data)}`);
 });
+

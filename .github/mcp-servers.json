@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "github": {
+      "description": "Access GitHub repository data, issues, pull requests, and metadata",
+      "enabled": true,
+      "note": "Requires GITHUB_TOKEN environment variable with 'repo' scope"
+    },
+    "filesystem": {
+      "description": "Enhanced file operations and search across the repository",
+      "enabled": true,
+      "note": "Uses ripgrep and glob for fast searching"
+    }
+  }
+}

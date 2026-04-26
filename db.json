@@ -1,6 +1,0 @@
-{
-    "users": [
-      { "id": 1, "username": "testuser", "password": "testpass", "token": "mocked-token" }
-    ]
-  }
-  
